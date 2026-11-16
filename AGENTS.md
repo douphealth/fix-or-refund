@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- The legal decision engine and all Greek/English copy live in `src/lib/engine/` (ported from the v5 static release); UI must read text via `t(key)` and never hard-code legal claims, so legal reviews touch one place.
+- User case data stays in the browser (opt-in localStorage only); never send answers or letters to a server, because privacy is a core promise of the product.
