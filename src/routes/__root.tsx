@@ -28,8 +28,11 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">{t("missingTitle")}</h2>
+        <title>{t("missingTitle")}</title>
+        <meta name="description" content={t("missingBody")} />
+        <meta name="robots" content="noindex" />
+        <p className="text-7xl font-bold text-foreground">404</p>
+        <h1 className="mt-4 text-xl font-semibold text-foreground">{t("missingTitle")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {t("missingBody")}
         </p>
@@ -56,6 +59,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
+        <title>{t("errorTitle")}</title>
+        <meta name="description" content={t("errorBody")} />
+        <meta name="robots" content="noindex" />
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           {t("errorTitle")}
         </h1>
@@ -92,8 +98,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Fix or Refund? — The Consumer Desk" },
-      { name: "description", content: "Repair, replacement and refund rights in Greece and the EU." },
       { name: "theme-color", content: "#132320" },
     ],
     links: [
