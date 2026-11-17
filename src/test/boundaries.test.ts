@@ -1,0 +1,25 @@
+import { describe, expect, it } from "vitest";
+import { evaluate as run, parseDate, addYears } from "@/lib/engine/rules";
+const evaluate = (input: Parameters<typeof run>[0], clock: Date): any => run(input, clock);
+const clock = new Date("2026-11-17T12:00:00Z");
+const base={country:"FR",product:"laptop",sellerType:"business",condition:"new",shortenedUsed:"unsure",purchaseDate:"2025-01-01",deliveryDate:"2025-01-01",failureDate:"2026-01-01",issue:"fault",sellerResponse:"none",serious:"unsure",promptNotice:"unsure",priorRepair:"no"};
+describe("baseline branches and date boundaries",()=>{
+  it("private seller has no statutory seller remedy",()=>expect(evaluate({...base,sellerType:"private"},clock).remedies.sellerRepair).toBe("unconfirmed"));
+  it("wear does not imply free seller repair",()=>expect(evaluate({...base,issue:"wear"},clock).remedies.sellerRepair).toBe("unconfirmed"));
+  it("uncertain cause requires review",()=>expect(evaluate({...base,issue:"unsure"},clock).remedies.sellerRepair).toBe("review"));
+  it("used one-year terms do not automatically deny a later claim",()=>expect(evaluate({...base,condition:"used",shortenedUsed:"yes",failureDate:"2026-01-02"},clock).remedies.sellerRepair).toBe("review"));
+  it("unknown used terms require review",()=>expect(evaluate({...base,condition:"used"},clock).remedies.sellerRepair).toBe("review"));
+  for(const response of ["rejected","attempted","delayed"]) it(`${response} allows only conditional refund`,()=>expect(evaluate({...base,sellerResponse:response},clock).remedies.refund).toBe("conditional"));
+  it("a minor defect does not justify termination even after refusal",()=>expect(evaluate({...base,sellerResponse:"rejected",serious:"no"},clock).remedies.refund).toBe("unconfirmed"));
+  it("a reported serious defect is not a guaranteed refund",()=>expect(evaluate({...base,serious:"yes"},clock).remedies.refund).toBe("conditional"));
+  it("first-year anniversary is included",()=>expect(evaluate(base,clock).facts.in1AtFailure).toBe(true));
+  it("day after first-year anniversary is excluded",()=>expect(evaluate({...base,failureDate:"2026-01-02"},clock).facts.in1AtFailure).toBe(false));
+  it("second-year anniversary is included",()=>expect(evaluate({...base,purchaseDate:"2024-11-17",deliveryDate:"2024-11-17",failureDate:"2026-11-17"},clock).facts.in2AtFailure).toBe(true));
+  it("day after two years needs further limitation analysis",()=>expect(evaluate({...base,purchaseDate:"2024-11-16",deliveryDate:"2024-11-16",failureDate:"2026-11-17"},clock).status).toBe("outside"));
+  it("day 30 is a timing marker only",()=>{const r=evaluate({...base,deliveryDate:"2026-10-01",purchaseDate:"2026-10-01",failureDate:"2026-10-31"},clock);expect(r.facts.early30).toBe(true);expect(r.remedies.refund).toBe("unconfirmed");});
+  it("day 31 is not an early marker",()=>expect(evaluate({...base,deliveryDate:"2026-10-01",purchaseDate:"2026-10-01",failureDate:"2026-11-01"},clock).facts.early30).toBe(false));
+  for(const date of ["2026-07-30","2026-07-31"]) it(`pending Greek cutoff ${date} cannot grant an extension`,()=>expect(evaluate({...base,country:"GR",purchaseDate:date,deliveryDate:date,failureDate:"2026-08-10",priorRepair:"yes"},clock).facts.repairExtensionPossible).toBe(false));
+  it("invalid calendar date is rejected",()=>expect(parseDate("2026-02-30")).toBe(null));
+  it("leap anniversary uses February 28",()=>{const date=parseDate("2024-02-29");expect(date).not.toBeNull();if(date) expect(addYears(date,2).toISOString().slice(0,10)).toBe("2026-02-28");});
+  it("failure before delivery is invalid",()=>expect(evaluate({...base,failureDate:"2024-12-31"},clock).errors).toContain("failureBeforeDelivery"));
+});

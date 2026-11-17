@@ -29,6 +29,8 @@ describe("rights engine", () => {
     expect(evaluate({ ...base, issue: "accidental" }, clock).remedies.refund).toBe("unconfirmed");
   });
   it("caps Feb 29 anniversaries to Feb 28", () => {
-    expect(addYears(parseDate("2024-02-29")!, 1).toISOString().slice(0, 10)).toBe("2025-02-28");
+    const date = parseDate("2024-02-29");
+    if (!date) throw new Error("Expected valid leap date");
+    expect(addYears(date, 1).toISOString().slice(0, 10)).toBe("2025-02-28");
   });
 });

@@ -1,3 +1,6 @@
+import { Button } from "@/components/ui/button";
+import { RULESET_VERSION } from "@/lib/engine/governance";
+import { parseSavedCase } from "@/lib/engine/saved-case";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -42,7 +45,8 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
   const top = useRef<HTMLDivElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const letterRef = useRef<HTMLDivElement>(null);
-  const max = todayISO();
+  const [max, setMax] = useState("");
+  useEffect(() => setMax(todayISO()), []);
 
   useEffect(() => {
     if (!preset) return;
@@ -56,8 +60,9 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
     try {
       const raw = localStorage.getItem(SAVED_KEY);
       if (!raw) return;
-      const d = JSON.parse(raw);
-      if (d?.v !== 1) return;
+      const parsed = parseSavedCase(raw);
+      if (!parsed.success) { toast.error(t("savedInvalid")); return; }
+      const d = parsed.data;
       const f = { ...initialForm(), ...d.form };
       setForm(f);
       setDetails({ ...emptyDetails, ...d.details });
@@ -66,7 +71,8 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
       setTrader(d.traderCountry || "");
       setEvidence(Array.isArray(d.evidence) ? d.evidence : []);
       const out: any = evaluate(f);
-      if (out.valid) { setResult(out); setStep(2); }
+      if (!out.valid) { toast.error(t("savedInvalid")); return; }
+      setResult(out); setStep(2);
       toast(get("restored"));
     } catch { /* storage may be blocked */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -84,11 +90,13 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
     setStep(n);
     setError("");
     top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    requestAnimationFrame(() => top.current?.focus({ preventScroll: true }));
   };
 
   const validatePurchase = () => {
     const p = parseDate(form.purchaseDate), d = parseDate(form.deliveryDate || form.purchaseDate);
-    const today = parseDate(max)!;
+    const today = parseDate(max);
+    if (!today) return false;
     if (!p || !d) return setError(t("errDate")), false;
     if (p > today || d > today) return setError(t("errFuture")), false;
     if (d < p) return setError(t("errOrder")), false;
@@ -110,7 +118,7 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
     setResult(out);
     setRemedy(recommendedRemedy(out));
     setStep(2);
-    requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    requestAnimationFrame(() => { resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); resultRef.current?.focus({ preventScroll: true }); });
   };
 
   const reset = () => {
@@ -137,8 +145,8 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
   };
 
   return (
-    <section id="checker" className="relative scroll-mt-20 py-20 md:py-28">
-      <div ref={top} className="mx-auto max-w-6xl scroll-mt-24 px-5">
+    <section id="checker" className="relative scroll-mt-20 py-8 md:py-12">
+      <div tabIndex={-1} ref={top} className="mx-auto max-w-6xl scroll-mt-24 px-5">
         <div className="reveal mb-10 grid gap-6 md:grid-cols-[1.3fr_1fr] md:items-end">
           <div>
             <p className="kicker">{t("toolKicker")}</p>
@@ -147,6 +155,7 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
           <p className="text-lg text-muted-foreground">{t("toolSubtitle")} <span className="font-semibold text-foreground">· {t("toolTime")}</span></p>
         </div>
 
+        <p className="mb-5 border-l-2 border-signal pl-4 text-sm text-muted-foreground">{t(form.country === "GR" ? "coverageNational" : "coverageBaseline")}<br />{t("scopeNotice")}</p>
         <Stepper step={step} />
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -205,7 +214,7 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
                   <label className="field"><span>{t("failureDate")}</span>
                     <div className="flex gap-2">
                       <input type="date" className="input" max={max} value={form.failureDate} onChange={(e) => update("failureDate", e.target.value)} />
-                      <button type="button" className="btn-ghost shrink-0 text-sm" onClick={() => update("failureDate", max)}>{t("todayButton")}</button>
+                      <Button variant="ghost" type="button" className="btn-ghost shrink-0 text-sm" onClick={() => update("failureDate", max)}>{t("todayButton")}</Button>
                     </div>
                     <small className="text-muted-foreground">{t("failureHint")}</small>
                   </label>
@@ -224,10 +233,10 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
                   </p>
                 )}
                 <div className="rounded-xl border border-dashed p-5">
-                  <button type="button" className="flex w-full items-center justify-between text-left" onClick={() => setAdvanced(!advanced)} aria-expanded={advanced}>
+                  <Button variant="ghost" type="button" className="flex w-full items-center justify-between text-left" onClick={() => setAdvanced(!advanced)} aria-expanded={advanced}>
                     <span><strong className="block">{t("advancedTitle")}</strong><small className="text-muted-foreground">{t("advancedDesc")}</small></span>
                     <span className={`text-2xl transition-transform ${advanced ? "rotate-45" : ""}`}>+</span>
-                  </button>
+                  </Button>
                   {advanced && (
                     <div className="animate-pop mt-5 grid gap-5 md:grid-cols-3">
                       {(["serious", "promptNotice", "priorRepair"] as const).map((k) => (
@@ -247,11 +256,11 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
             <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-6">
               <p className="flex items-center gap-2 text-sm text-muted-foreground"><ShieldCheck className="size-4 text-ok" />{t("privacyInline")}</p>
               <div className="flex flex-wrap gap-2">
-                <button type="button" className="btn-ghost text-sm" onClick={reset}><RotateCcw className="size-4" />{t("clearForm")}</button>
-                {step >= 1 && <button type="button" className="btn-ghost" onClick={() => goto(0)}><ArrowLeft className="size-4" />{t("goBack")}</button>}
-                <button type="submit" className="btn-signal">
+                <Button variant="ghost" type="button" className="btn-ghost text-sm" onClick={reset}><RotateCcw className="size-4" />{t("clearForm")}</Button>
+                {step >= 1 && <Button variant="ghost" type="button" className="btn-ghost" onClick={() => goto(0)}><ArrowLeft className="size-4" />{t("goBack")}</Button>}
+                <Button variant="ghost" type="submit" className="btn-signal">
                   {step === 0 ? t("goNext") : t("checkRights")}<ArrowRight className="size-4" />
-                </button>
+                </Button>
               </div>
             </div>
           </form>
@@ -269,7 +278,7 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
         </div>
 
         {result && (
-          <div ref={resultRef} className="scroll-mt-20">
+          <div tabIndex={-1} ref={resultRef} className="scroll-mt-20">
             <Results result={result} onEdit={() => goto(0)} onDraft={(r) => { setRemedy(r); letterRef.current?.scrollIntoView({ behavior: "smooth" }); }} />
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -285,15 +294,15 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
                   {EVIDENCE.map((k) => {
                     const on = evidence.includes(k);
                     return (
-                      <button key={k} type="button" data-on={on} className="chip text-left"
+                      <Button variant="ghost" key={k} type="button" aria-pressed={on} data-on={on} className="chip text-left"
                         onClick={() => setEvidence(on ? evidence.filter((x) => x !== k) : [...evidence, k])}>
                         <span className={`grid size-5 place-items-center rounded border ${on ? "border-primary-foreground" : ""}`}>{on && <Check className="size-3.5" />}</span>
                         {t(EVIDENCE_KEY[k])}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
-                <button className="btn-ghost mt-4 text-sm" onClick={() => copy(evidenceLines.join("\n"), "evidenceCopied")}><ClipboardCopy className="size-4" />{t("copyEvidence")}</button>
+                <Button variant="ghost" className="btn-ghost mt-4 text-sm" onClick={() => copy(evidenceLines.join("\n"), "evidenceCopied")}><ClipboardCopy className="size-4" />{t("copyEvidence")}</Button>
               </div>
               <div className="surface-ink grain flex flex-col justify-between rounded-2xl p-6">
                 <div>
@@ -301,11 +310,11 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
                   <h3 className="mt-2 text-2xl font-semibold">{t("shareTitle")}</h3>
                   <p className="mt-2 text-ink-muted">{t("shareText")}</p>
                 </div>
-                <button className="btn-signal mt-6 self-start" onClick={async () => {
+                <Button variant="ghost" className="btn-signal mt-6 self-start" onClick={async () => {
                   const url = new URL(window.location.href); url.search = ""; url.hash = ""; url.searchParams.set("lang", lang);
                   try { if (navigator.share) await navigator.share({ title: "Fix or Refund?", url: url.toString() }); else { await navigator.clipboard.writeText(url.toString()); toast(t("shareFallback")); } }
                   catch { /* user cancelled */ }
-                }}><Share2 className="size-4" />{t("shareButton")}</button>
+                }}><Share2 className="size-4" />{t("shareButton")}</Button>
               </div>
             </div>
             <p className="mt-4 text-center text-xs text-muted-foreground">{t("resultDisclaimer")}</p>
@@ -319,7 +328,7 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
                   <label className="field"><span>{t("letterRequest")}</span>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {(["repair", "replacement", "refund", "manufacturer", "review"] as Remedy[]).map((r) => (
-                        <button key={r} type="button" data-on={remedy === r} className="chip justify-center text-sm" onClick={() => setRemedy(r)}>{t("request" + cap(r))}</button>
+                        <Button variant="ghost" key={r} type="button" aria-pressed={remedy === r} data-on={remedy === r} className="chip justify-center text-sm" onClick={() => setRemedy(r)}>{t("request" + cap(r))}</Button>
                       ))}
                     </div>
                   </label>
@@ -346,30 +355,32 @@ export function Checker({ preset }: { preset: { product: string; n: number } | n
                     <pre className="max-h-[560px] overflow-auto whitespace-pre-wrap p-6 font-sans text-sm leading-relaxed">{letter}</pre>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button className="btn-signal" onClick={() => copy(letter, "copyDone")}><ClipboardCopy className="size-4" />{t("copy")}</button>
-                    <button className="btn-ghost" onClick={() => {
+                    <Button variant="ghost" className="btn-signal" onClick={() => copy(letter, "copyDone")}><ClipboardCopy className="size-4" />{t("copy")}</Button>
+                    <Button variant="ghost" className="btn-ghost" onClick={() => {
                       const a = details.recipientEmail.trim();
-                      if (a && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a)) { toast.error(t("emailMissing")); return; }
+                      if (/[\r\n]/.test(a) || (a && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a))) { toast.error(t("emailMissing")); return; }
                       const subject = remedy === "manufacturer" ? t("letterSubjectManufacturer") : t("letterSubjectSeller");
-                      window.location.href = `mailto:${encodeURIComponent(a)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(letter)}`;
-                    }}><Mail className="size-4" />{t("openEmail")}</button>
-                    <button className="btn-ghost" onClick={() => { downloadText(letter, "fix-or-refund-letter.txt"); toast(t("downloadDone")); }}><Download className="size-4" />{t("download")}</button>
-                    <button className="btn-ghost" onClick={() => window.print()}><Printer className="size-4" />{t("print")}</button>
+                      const uri = `mailto:${encodeURIComponent(a)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(letter)}`;
+                      if (uri.length > 8000) { toast.error(t("emailLong")); return; }
+                      window.location.href = uri;
+                    }}><Mail className="size-4" />{t("openEmail")}</Button>
+                    <Button variant="ghost" className="btn-ghost" onClick={() => { downloadText(letter, "fix-or-refund-letter.txt"); toast(t("downloadDone")); }}><Download className="size-4" />{t("download")}</Button>
+                    <Button variant="ghost" className="btn-ghost" onClick={() => window.print()}><Printer className="size-4" />{t("print")}</Button>
                   </div>
                   <div className="card-paper p-5">
                     <strong>{t("casePackTitle")}</strong>
                     <p className="mt-1 text-sm text-muted-foreground">{t("casePackText")}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <button className="btn-ghost text-sm" onClick={() => {
+                      <Button variant="ghost" className="btn-ghost text-sm" onClick={() => {
                         const f = result.facts;
                         const header = [`${t("factNow")}: ${fmt(f.referenceDate)}`, `${t("factCountry")}: ${countryName(lang, f.country)}`, `${t("product")}: ${details.productName || productName(lang, f.product)}`, `${t("factAge")}: ${fmt(f.deliveryDate)}`, `${t("factFailure")}: ${fmt(f.failureDate)}`];
                         downloadText(createCasePack(lang, result, letter, evidenceLines, header), "fix-or-refund-case-pack.txt"); toast(t("packDone"));
-                      }}><Download className="size-4" />{t("downloadCasePack")}</button>
-                      <button className="btn-ghost text-sm" onClick={() => {
+                      }}><Download className="size-4" />{t("downloadCasePack")}</Button>
+                      <Button variant="ghost" className="btn-ghost text-sm" onClick={() => {
                         try { localStorage.setItem(SAVED_KEY, JSON.stringify({ v: 1, savedAt: new Date().toISOString(), form, details, remedy, residenceCountry: residence, traderCountry: trader, evidence })); toast.success(t("saved")); }
                         catch { toast.error(t("saveFailed")); }
-                      }}><Save className="size-4" />{t("saveCase")}</button>
-                      <button className="btn-ghost text-sm" onClick={() => { try { localStorage.removeItem(SAVED_KEY); } catch { /* */ } toast(t("erased")); }}><Trash2 className="size-4" />{t("eraseCase")}</button>
+                      }}><Save className="size-4" />{t("saveCase")}</Button>
+                      <Button variant="ghost" className="btn-ghost text-sm" onClick={() => { try { localStorage.removeItem(SAVED_KEY); } catch { /* */ } toast(t("erased")); }}><Trash2 className="size-4" />{t("eraseCase")}</Button>
                     </div>
                   </div>
                 </div>
@@ -417,9 +428,20 @@ function Choice({ label, value, onChange, options, cols }: { label: string; valu
       <legend className="mb-2 text-sm font-semibold">{label}</legend>
       <div className={`grid gap-2 ${cols ? "sm:grid-cols-2" : "grid-cols-2"}`} role="radiogroup">
         {options.map(([v, l]) => (
-          <button key={v} type="button" role="radio" aria-checked={value === v} data-on={value === v} className="chip" onClick={() => onChange(v ?? "")}>
+          <Button variant="ghost" key={v} type="button" role="radio" aria-checked={value === v} tabIndex={value === v ? 0 : -1} data-on={value === v} className="chip" onClick={() => onChange(v ?? "")}
+            onKeyDown={(event) => {
+              if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
+              event.preventDefault();
+              const index = options.findIndex(([id]) => id === v);
+              const next = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 : (index + (["ArrowRight", "ArrowDown"].includes(event.key) ? 1 : -1) + options.length) % options.length;
+              const target = options[next]?.[0];
+              if (!target) return;
+              onChange(target);
+              const group = event.currentTarget.parentElement;
+              requestAnimationFrame(() => group?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next]?.focus());
+            }}>
             <span className={`size-3 rounded-full border-2 ${value === v ? "border-primary-foreground bg-signal" : ""}`} />{l}
-          </button>
+          </Button>
         ))}
       </div>
     </fieldset>
@@ -431,7 +453,7 @@ function YesNo({ value, onChange }: { value: string; onChange: (v: string) => vo
   return (
     <div className="grid grid-cols-3 gap-1.5">
       {[["yes", "yesOption"], ["no", "noOption"], ["unsure", "unsureOption"]].map(([v, k]) => (
-        <button key={v} type="button" data-on={value === v} aria-pressed={value === v} className="chip justify-center px-2 py-2 text-sm" onClick={() => onChange(v ?? "")}>{t(k)}</button>
+        <Button variant="ghost" key={v} type="button" aria-pressed={value === v} data-on={value === v} className="chip justify-center px-2 py-2 text-sm" onClick={() => onChange(v ?? "")}>{t(k)}</Button>
       ))}
     </div>
   );
@@ -456,13 +478,17 @@ function Results({ result, onEdit, onDraft }: { result: any; onEdit: () => void;
   const fmt = (iso: string) => fmtDate(lang, iso);
   return (
     <div className="mt-16">
-      <div className="surface-ink grain animate-pop overflow-hidden rounded-3xl p-7 md:p-12">
+      <div className="surface-ink overflow-hidden p-6 md:p-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="rounded-full bg-signal px-4 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-signal-foreground">{t("status" + s)}</span>
-          <button onClick={onEdit} className="text-sm text-ink-muted underline-offset-4 hover:underline">{t("editAnswers")}</button>
+          <Button variant="ghost" onClick={onEdit} className="text-sm text-ink-muted underline-offset-4 hover:underline">{t("editAnswers")}</Button>
         </div>
+        <p className="kicker mt-6 text-ink-muted">{t("nextActionEyebrow")}</p>
+        <h2 className="mt-2 text-3xl font-semibold">{t("next" + cap(result.route))}</h2>
+        <p className="mt-3 text-ink-muted">{t("next" + cap(result.route) + "Body")}</p>
+        <p className="mt-3 font-semibold">{t(result.route === "seller" ? "contactSeller" : result.route === "manufacturer" ? "contactManufacturer" : "contactReview")}</p>
         <p className="kicker mt-6 text-ink-muted">{t("yourResult")}</p>
-        <h2 className="mt-2 max-w-3xl text-4xl font-semibold md:text-6xl">{t("heading" + s)}</h2>
+        <h2 className="mt-2 max-w-3xl text-2xl font-semibold md:text-3xl">{t("heading" + s)}</h2>
         <p className="mt-4 max-w-3xl text-lg text-ink-muted">{t("intro" + s)}{f.isGreece ? "" : " " + t("euQualifier")}</p>
         <div className="mt-6 flex flex-wrap gap-2 text-xs">
           {[`${t("factCountry")}: ${countryName(lang, f.country)}`, `${t("factAge")}: ${fmt(f.deliveryDate)}`, `${t("factFailure")}: ${fmt(f.failureDate)}`, `${t("factNow")}: ${fmt(f.referenceDate)}`].map((x) => (
@@ -470,6 +496,7 @@ function Results({ result, onEdit, onDraft }: { result: any; onEdit: () => void;
           ))}
         </div>
         <Timeline facts={f} />
+        <div className="mt-6 border-t border-ink-muted/30 pt-4"><h3 className="text-lg font-semibold">{t("uncertaintyTitle")}</h3><p className="mt-2 text-sm text-ink-muted">{t("uncertaintyBody")}</p><p className="mt-2 text-sm text-ink-muted">{t(result.coverage === "national-pending" ? "coverageNational" : "coverageBaseline")} · {t("reviewPending")}</p><p className="mt-2 font-mono text-xs text-ink-muted">{t("ruleVersion")}: {RULESET_VERSION}</p></div>
         <div className="mt-8 grid gap-3 md:grid-cols-3">
           {[
             [t("snapshotScope"), t(f.isGreece ? "snapshotScopeGR" : "snapshotScopeEU")],
@@ -497,7 +524,7 @@ function Results({ result, onEdit, onDraft }: { result: any; onEdit: () => void;
                 <h4 className="mt-4 font-display text-xl font-semibold">{t(title)}</h4>
                 <p className="mt-1 flex-1 text-sm text-muted-foreground">{t(desc)}</p>
                 {state !== "unconfirmed" && (
-                  <button onClick={() => onDraft(r)} className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-signal">{t("remedyDraft")}<ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></button>
+                  <Button variant="ghost" onClick={() => onDraft(r)} className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-signal">{t("remedyDraft")}<ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Button>
                 )}
               </div>
             );
@@ -511,7 +538,7 @@ function Results({ result, onEdit, onDraft }: { result: any; onEdit: () => void;
           <h3 className="mt-2 text-2xl font-semibold">{t("reasonHeading")}</h3>
           <ul className="mt-5 grid gap-3">
             {result.reasons.map((k: string) => (
-              <li key={k} className="flex gap-3"><span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"><Check className="size-3" /></span><span className="text-sm leading-relaxed">{t("reason_" + k)}</span></li>
+              <li key={k} className="flex gap-3"><span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"><Check className="size-3" /></span><span className="text-sm leading-relaxed">{t(k === "nationalReviewPending" ? "legalPendingReason" : "reason_" + k)}</span></li>
             ))}
           </ul>
         </div>
@@ -533,35 +560,13 @@ function Results({ result, onEdit, onDraft }: { result: any; onEdit: () => void;
   );
 }
 
-/** Visual guarantee clock: delivery → 1y → 2y → 3y with fault and today markers. */
+/** Accessible timing references without overlapping markers or universal coverage claims. */
 function Timeline({ facts }: { facts: any }) {
-  const { lang } = useLang();
-  const d = parseDate(facts.deliveryDate), fail = parseDate(facts.failureDate), now = parseDate(facts.referenceDate);
-  if (!d || !fail || !now) return null;
-  const end = addYears(d, 3), span = end.getTime() - d.getTime();
-  const pos = (x: Date) => Math.max(0, Math.min(100, ((x.getTime() - d.getTime()) / span) * 100));
-  const L = lang === "el" ? { y: "έτ.", f: "Βλάβη", n: "Σήμερα", d: "Παράδοση" } : { y: "yr", f: "Fault", n: "Today", d: "Delivery" };
-  return (
-    <div className="mt-10" aria-hidden>
-      <div className="relative h-3 rounded-full bg-ink-foreground/10">
-        <div className="absolute inset-y-0 left-0 rounded-l-full bg-ok/70" style={{ width: `${pos(addYears(d, 1))}%` }} />
-        <div className="absolute inset-y-0 bg-ok/40" style={{ left: `${pos(addYears(d, 1))}%`, width: `${pos(addYears(d, 2)) - pos(addYears(d, 1))}%` }} />
-        {[1, 2].map((y) => <span key={y} className="absolute top-full mt-2 -translate-x-1/2 font-mono text-[10px] text-ink-muted" style={{ left: `${pos(addYears(d, y))}%` }}>{y} {L.y}</span>)}
-        <span className="absolute top-full mt-2 font-mono text-[10px] text-ink-muted">{L.d}</span>
-        <Marker left={pos(fail)} label={L.f} cls="bg-signal" up />
-        <Marker left={pos(now)} label={L.n} cls="bg-ink-foreground" />
-      </div>
-      <div className="h-8" />
-    </div>
-  );
-}
-function Marker({ left, label, cls, up }: { left: number; label: string; cls: string; up?: boolean }) {
-  return (
-    <span className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-1000" style={{ left: `${left}%` }}>
-      <span className={`block size-5 rounded-full border-4 border-ink ${cls}`} />
-      <span className={`absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[10px] font-bold uppercase ${up ? "-top-6 text-signal" : "top-7"}`}>{label}</span>
-    </span>
-  );
+  const { lang, t } = useLang();
+  const d = parseDate(facts.deliveryDate);
+  if (!d) return null;
+  const rows = [[t("factAge"), facts.deliveryDate], [lang === "el" ? "1 έτος" : "1 year", addYears(d, 1).toISOString().slice(0,10)], [lang === "el" ? "2 έτη" : "2 years", addYears(d, 2).toISOString().slice(0,10)], [t("factFailure"),facts.failureDate],[t("factNow"),facts.referenceDate]];
+  return <section className="mt-6 border-y border-ink-muted/30 py-4"><h3 className="text-base font-semibold">{t("timingLabel")}</h3><p className="mt-1 text-sm text-ink-muted">{t("timingDescription")}</p><dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-5">{rows.map(([label, date])=><div key={label}><dt className="text-xs text-ink-muted">{label}</dt><dd className="mt-1 text-sm">{fmtDate(lang,date)}</dd></div>)}</dl></section>;
 }
 
 function Escalation({ business, residence, trader, setResidence, setTrader }: { business: boolean; residence: string; trader: string; setResidence: (v: string) => void; setTrader: (v: string) => void }) {

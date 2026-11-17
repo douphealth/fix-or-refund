@@ -1,4 +1,5 @@
 // @ts-nocheck — ported verbatim from v5 static release; covered by src/test/rules.test.ts
+import { coverageFor, RULESET_VERSION } from "./governance";
 /**
  * Fix or Refund? — conservative, source-backed public legal-information rules.
  * Last legal review: 2026-10-30. Not an eligibility determination.
@@ -40,7 +41,8 @@ export const SOURCES = Object.freeze({
   euRepairLaw: {en:'EUR-Lex — Directive (EU) 2024/1799',el:'EUR-Lex — Οδηγία (ΕΕ) 2024/1799',url:'https://eur-lex.europa.eu/eli/dir/2024/1799/oj/eng',kind:'EU primary law'},
   grGuarantee: {en:'Greek government — statutory warranty',el:'gov.gr — νόμιμη εγγύηση',url:'https://www.gov.gr/el/sdg/consumer-rights/consumer-rights-and-guarantees/general/statutory-warranty',kind:'Government'},
   euRepair: {en:'European Commission — repair directive',el:'Ευρωπαϊκή Επιτροπή — δικαίωμα επισκευής',url:'https://commission.europa.eu/law/law-topic/consumer-protection-law/directive-repair-goods_en',kind:'EU'},
-  grLaw: {en:'Hellenic Parliament — Law 5317/2026',el:'Βουλή των Ελλήνων — Ν. 5317/2026',url:'https://www.hellenicparliament.gr/Nomothetiko-Ergo/Anazitisi-Nomothetikou-Ergou?law_id=2fa5316d-9df6-4ff0-8eb9-b479000a6e8f',kind:'Government'},
+  grLaw: {en:'Hellenic Parliament — Law 5317/2026',el:'Βουλή των Ελλήνων — Ν. 5317/2026',url:'https://www.hellenicparliament.gr/Nomothetiko-Ergo/Anazitisi-Nomothetikou-Ergou?law_id=2fa5316d-9df6-4ff0-8eb9-b479000a6e8f',kind:'Greek primary law'},
+  grAmendment: {en:'Government-published Law 5326/2026 — Article 106 (review pending)',el:'Κυβερνητική δημοσίευση Ν. 5326/2026 — άρθρο 106 (προς έλεγχο)',url:'https://www.aade.gr/sites/default/files/2026-08/n5326_2026.pdf',kind:'Greek primary law'},
   grEffective: {en:'Law 5317/2026 — Article 143 (effective dates)',el:'Ν. 5317/2026 — άρθρο 143 (έναρξη ισχύος)',url:'https://www.taxheaven.gr/law/5317/2026/arthro/143',kind:'Legal reference'},
   grRepair: {en:'Law 5317/2026 — Article 97 (manufacturer repair)',el:'Ν. 5317/2026 — άρθρο 97 (υποχρέωση επισκευής)',url:'https://www.taxheaven.gr/law/5317/2026/arthro/97',kind:'Legal reference'},
   grThreeYear: {en:'Law 5317/2026 — Article 102 (3-year limitation)',el:'Ν. 5317/2026 — άρθρο 102 (τριετής παραγραφή)',url:'https://www.taxheaven.gr/law/5317/2026/arthro/102',kind:'Legal reference'},
@@ -68,7 +70,7 @@ export function addYears(date, years) {
   return new Date(Date.UTC(targetYear, month, Math.min(day, endOfMonth)));
 }
 export function daysBetween(a,b) { return Math.round((b-a)/86400000); }
-export function todayUTC(clock = new Date()) {return new Date(Date.UTC(clock.getFullYear(),clock.getMonth(),clock.getDate()));}
+export function todayUTC(clock = new Date()) {return new Date(Date.UTC(clock.getUTCFullYear(),clock.getUTCMonth(),clock.getUTCDate()));}
 
 /** Accepts populated form state and optional clock. Returns symbolic fact/action codes. */
 export function evaluate(raw, clock = new Date()) {
@@ -113,7 +115,7 @@ export function evaluate(raw, clock = new Date()) {
   const in3AtFailure = failure <= addYears(delivery,3);
   const early30 = daysBetween(delivery,failure) <= 30;
   const postCutoff = Boolean(purchase && purchase >= parseDate(GREEK_REPAIR_CUTOFF));
-  const repairExtensionPossible = isGreece && business && postCutoff && f.priorRepair === 'yes' && in3Now && in3AtFailure && !buyerIssue;
+  const repairExtensionPossible = false; // National repair extension held for approved legal review.
   const shortenedUsed = f.condition === 'used' && f.shortenedUsed === 'yes';
   const usedPeriodUncertain = f.condition === 'used' && f.shortenedUsed === 'unsure';
   const shortenedBarrier = shortenedUsed && !in1AtFailure;
@@ -124,7 +126,7 @@ export function evaluate(raw, clock = new Date()) {
   const mfgListed = product.annex;
   const manufacturerPossible = mfgListed; // Must still verify product regulation/model/date/parts/repairability.
   const refundTriggers = f.sellerResponse === 'rejected' || f.sellerResponse === 'attempted' || f.sellerResponse === 'delayed';
-  const earlyGreeceRefund = isGreece && early30 && f.promptNotice === 'yes'; // Independent route: the defect need not separately be marked serious.
+  const earlyGreeceRefund = false; // Special Greek route is review-pending. // Independent route: the defect need not separately be marked serious.
   // A minor non-conformity is not itself a ground to terminate a sale.
   // We never promise a refund; seriousness and factual conditions still require review.
   const refundMayBeAvailable = suggestedSellerClaim && f.serious !== 'no' && (refundTriggers || (isGreece && earlyGreeceRefund) || f.serious === 'yes');
@@ -161,11 +163,7 @@ export function evaluate(raw, clock = new Date()) {
     else if (in2AtFailure && (fault || uncertainFault)) reasons.push('evidenceAfterOne');
     if (shortenedBarrier) reasons.push('usedOneYearAgreed');
     else if (usedPeriodUncertain) reasons.push('usedTermsUnknown');
-    if (isGreece && postCutoff && (fault || uncertainFault)) {
-      reasons.push('postCutoffRepairChoice');
-      sourceIds.add('grThreeYear');
-    } else if (isGreece && !postCutoff) reasons.push('beforeCutoff');
-    if (repairExtensionPossible) { reasons.push('repairExtensionPossible');sourceIds.add('grThreeYear'); }
+    if (isGreece) { reasons.push('nationalReviewPending'); sourceIds.add('grAmendment'); }
     if (f.sellerResponse === 'rejected') reasons.push('sellerRefused');
     if (f.sellerResponse === 'attempted') reasons.push('repairFailed');
     if (f.sellerResponse === 'delayed') reasons.push('repairDelayed');
@@ -179,10 +177,10 @@ export function evaluate(raw, clock = new Date()) {
     sellerRepair: suggestedSellerClaim ? (strongSellerClaim?'potential':'review') : (repairExtensionPossible && fault?'review':'unconfirmed'),
     replacement: suggestedSellerClaim ? (strongSellerClaim?'potential':'review') : (repairExtensionPossible && fault?'review':'unconfirmed'),
     refund: refundMayBeAvailable ? 'conditional' : 'unconfirmed',
-    manufacturer: manufacturerPossible ? 'conditional' : 'unconfirmed'
+    manufacturer: manufacturerPossible ? 'review' : 'unconfirmed'
   };
   const route = strongSellerClaim || (repairExtensionPossible && business && fault) || (suggestedSellerClaim && uncertainFault) ? 'seller' : manufacturerPossible ? 'manufacturer' : 'sellerEvidence';
-  return {valid:true,status,route,remedies,reasons,sourceIds:[...sourceIds],facts:{
+  return {valid:true,coverage:coverageFor(f.country, EU_COUNTRIES.map(([code])=>code)),ruleVersion:RULESET_VERSION,ruleIds:['seller-conformity','refund-conditions','proof', ...(manufacturerPossible?['manufacturer-repair']:[]), ...(isGreece?['gr-repair-transition','gr-early-refund']:[])],status,route,remedies,reasons,sourceIds:[...sourceIds],facts:{
     country:f.country,product:f.product,isGreece,business,postCutoff,manufacturerPossible,
     in1AtFailure,in2AtFailure,in2Now,in3Now,in3AtFailure,early30,earlyGreeceRefund,
     sellerResponse:f.sellerResponse,issue:f.issue,serious:f.serious,promptNotice:f.promptNotice,priorRepair:f.priorRepair,

@@ -1,0 +1,19 @@
+name: Source availability review
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * 1'
+permissions:
+  contents: read
+jobs:
+  availability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun scripts/check-sources.ts > source-availability.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: source-availability-not-legal-approval
+          path: source-availability.json

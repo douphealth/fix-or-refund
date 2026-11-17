@@ -32,3 +32,6 @@ use the editor.
 ## Project rules
 - The legal decision engine and all Greek/English copy live in `src/lib/engine/` (ported from the v5 static release); UI must read text via `t(key)` and never hard-code legal claims, so legal reviews touch one place.
 - User case data stays in the browser (opt-in localStorage only); never send answers or letters to a server, because privacy is a core promise of the product.
+- Coverage and versioned rule governance live beside the pure engine; pending national provisions cannot elevate baseline conclusions, so reviewer approval is explicit.
+- Stable bilingual checker and supporting content use locale routes and shared desk views, so translations and legal review remain centralized.
+- Validate opt-in saved cases before restoring them and recompute guidance with current rules, so corrupt or stale data cannot become a legal conclusion.

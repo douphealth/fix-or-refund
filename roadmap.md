@@ -1,0 +1,11 @@
+# Trustworthy Consumer Desk upgrade
+- [x] Coverage, versioned rule/source records and safe legal review boundaries.
+- [x] Actionable results, bounded letters and exports.
+- [x] Compact checker-first design, bilingual pages and accessible controls.
+- [x] Saved-case validation, privacy and populated-case regression checks.
+- [x] Source-check workflow, maintenance queue and release evidence.
+- [ ] Qualified legal approval — blocked by reviewer and approval.
+- [ ] Ownership/corrections contact — blocked by confirmed owner/contact.
+- [ ] Production canonical/sitemap, monitoring and rollback — blocked by domain and deployment access.
+- [ ] GitHub workflow activation — blocked by confirmed repository connection.
+- [ ] Real-device/screen-reader checks and deployed performance comparison — blocked by device and production deployment access.

@@ -6,13 +6,18 @@ export type Lang = "el" | "en";
 type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k?: string) => string };
 const LangCtx = createContext<Ctx | null>(null);
 
-export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+export function LangProvider({ children, initialLang }: { children: ReactNode; initialLang?: Lang }) {
+  const [lang, setLangState] = useState<Lang>(initialLang ?? "en");
   useEffect(() => {
-    const q = new URL(window.location.href).searchParams.get("lang");
-    if (q === "el" || q === "en") setLangState(q);
+    if (initialLang) return;
+    const url = new URL(window.location.href);
+    const q = url.searchParams.get("lang");
+    if (q === "el" || q === "en") {
+      window.location.replace(`/${q}`);
+      return;
+    }
     else if (navigator.language?.toLowerCase().startsWith("el")) setLangState("el");
-  }, []);
+  }, [initialLang]);
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
@@ -52,7 +57,8 @@ export const productName = (lang: Lang, id: string) =>
   ((PRODUCTS as unknown as Record<string, string>[]).find((p) => p["id"] === id)?.[lang] ?? id);
 export const orderedCountries = () => {
   const all = EU_COUNTRIES as unknown as string[][];
-  return [all.find((c) => c[0] === "GR")!, ...all.filter((c) => c[0] !== "GR")];
+  const greece = all.find((c) => c[0] === "GR");
+  return greece ? [greece, ...all.filter((c) => c[0] !== "GR")] : all;
 };
 
 export function useReveal() {

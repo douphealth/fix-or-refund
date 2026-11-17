@@ -1,4 +1,5 @@
 import { get } from "./i18n";
+import { RULESET_VERSION } from "./governance";
 import { LAW_REVIEW_DATE, SOURCES } from "./rules";
 
 export type Remedy = "repair" | "replacement" | "refund" | "manufacturer" | "review";
@@ -29,6 +30,11 @@ export function recommendedRemedy(a: Assessment | null): Remedy {
   return "review";
 }
 
+export function safeRemedy(a: Assessment, choice: Remedy): Remedy {
+  const key = { repair: "sellerRepair", replacement: "replacement", refund: "refund", manufacturer: "manufacturer", review: "review" }[choice];
+  return choice !== "review" && a.remedies[key] === "unconfirmed" ? "review" : choice;
+}
+
 const REQUEST_KEY: Record<Remedy, string> = {
   repair: "letterRequestSellerRepair",
   replacement: "letterRequestReplacement",
@@ -48,6 +54,8 @@ export function createLetter(
 ): string {
   const t = (k: string) => get(lang, k) as string;
   const f = a.facts;
+  const effectiveChoice = safeRemedy(a, choice);
+  const unconfirmed = effectiveChoice !== choice;
   const product = d.productName.trim() || productLabel;
   const lines = [
     choice === "manufacturer" ? t("letterSubjectManufacturer") : t("letterSubjectSeller"),
@@ -62,9 +70,10 @@ export function createLetter(
     t("letterProblem"),
     d.issueDetails.trim() || t("letterProblemDefault"),
     "",
-    t(REQUEST_KEY[choice]),
+    t(REQUEST_KEY[unconfirmed ? "review" : choice]),
+    ...(unconfirmed ? [t("letterUnconfirmed")] : []),
     "",
-    choice === "manufacturer" ? t("letterMfgLaw") : f.isGreece ? t("letterGreekLaw") : t("letterEULaw"),
+    choice === "manufacturer" ? t("letterMfgLaw") : f.business ? t("letterEULaw") : t("letterRequestReview"),
     "",
     t("letterClosing"),
     "",
@@ -72,6 +81,8 @@ export function createLetter(
     d.yourName.trim() || t("letterSignature"),
     "",
     t("letterNotLegal"),
+    t("letterScope"),
+    `${t("letterVersion")}: ${RULESET_VERSION}`,
   ];
   return lines.join("\n");
 }
@@ -94,7 +105,7 @@ export function createCasePack(
     t("intro" + cap) + (a.facts.isGreece ? "" : " " + t("euQualifier")),
     "",
     t("packReasons"),
-    ...a.reasons.map((k: string) => "- " + t("reason_" + k)),
+    ...a.reasons.map((k: string) => "- " + t(k === "nationalReviewPending" ? "legalPendingReason" : "reason_" + k)),
     "",
     t("packEvidence"),
     ...evidence,
@@ -108,7 +119,10 @@ export function createCasePack(
     "",
     t("packDisclaimer"),
     t("packLocalOnly"),
-    `Legal-source review: ${LAW_REVIEW_DATE}`,
+    `${t("sourceStatus")}: ${LAW_REVIEW_DATE}`,
+    t("reviewPending"),
+    t(a.coverage === "national-pending" ? "coverageNational" : "coverageBaseline"),
+    `${t("ruleVersion")}: ${a.ruleVersion}`,
   ].join("\n");
 }
 
