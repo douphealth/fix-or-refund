@@ -1,0 +1,18 @@
+# Fix or Refund? — Consumer Desk
+
+> Independent, privacy-first EU-27 consumer rights checker and guide for broken or faulty products under Directive (EU) 2019/771 (Sale of Goods) and Directive (EU) 2024/1799 (EU Right to Repair). 100% local browser processing; informational guidance, not legal advice.
+
+## Core Tools & Sections
+- [EU-27 Consumer Rights Checker](https://fixorrefund.shop/#checker): 3-step interactive checker (Purchase -> Problem -> Personalized Roadmap & Formal Seller Claim Letter) supporting English and Greek.
+- [2026 Right to Repair +12-Month Simulator](https://fixorrefund.shop/#simulator): Interactive comparison showing how choosing repair extends the statutory guarantee by +12 months from 31 July 2026 under Directive (EU) 2024/1799.
+- [EU-27 Statutory Guarantee Explorer](https://fixorrefund.shop/#eu-explorer): Searchable breakdown of legal guarantee lengths and reversed burden-of-proof windows across all 27 EU Member States.
+- [Consumer Guides & Direct Answers](https://fixorrefund.shop/#guides): Citation-backed answers on seller liability, 14-day withdrawal, GARAN durability labels, and refund escalation triggers.
+
+## Official Legal Authorities Cited
+- [Directive (EU) 2019/771 on Sale of Goods (EUR-Lex)](https://eur-lex.europa.eu/eli/dir/2019/771/oj/eng)
+- [Directive (EU) 2024/1799 on Right to Repair (EUR-Lex)](https://eur-lex.europa.eu/eli/dir/2024/1799/oj/eng)
+- [European Commission — Directive on Repair of Goods](https://commission.europa.eu/law/law-topic/consumer-protection-law/directive-repair-goods_en)
+- [ECC-Net — Guarantees and Warranties](https://www.eccnet.eu/consumer-rights/what-are-my-consumer-rights/shopping-rights/guarantees-and-warranties)
+
+## Full Context
+- [llms-full.txt](https://fixorrefund.shop/llms-full.txt): Complete structured summary of EU-27 statutory periods, Annex II Right to Repair product categories, and remedy hierarchies.

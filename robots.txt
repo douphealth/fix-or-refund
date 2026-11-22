@@ -1,0 +1,31 @@
+# Fix or Refund? — Consumer Desk (https://fixorrefund.shop)
+# Open crawling for traditional search engines & AI answer engines (SEO / AEO / GEO)
+
+User-agent: *
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://fixorrefund.shop/sitemap.xml
