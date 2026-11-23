@@ -3,6 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { seoPreflight, seoRewrite } from "./lib/seo-edge";
+import { serveHome } from "./home/serve";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -52,6 +53,8 @@ export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const redirect = seoPreflight(request);
     if (redirect) return redirect;
+    const home = serveHome(request);
+    if (home) return seoRewrite(request, home);
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
