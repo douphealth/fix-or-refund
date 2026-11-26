@@ -1,15 +1,12 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import "@fontsource-variable/fraunces";
-@import "@fontsource-variable/manrope";
-@import "@fontsource/jetbrains-mono/500.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
-  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -46,38 +43,87 @@
 }
 
 :root {
-  --radius: 0.5rem;
-  --paper: oklch(0.975 0.012 85);
-  --background: oklch(0.965 0.014 85);
-  --foreground: oklch(0.22 0.03 170);
-  --card: oklch(0.99 0.006 85);
+  /* Dark is the default, exactly like the homepage (design/home.html: html.dark). */
+  color-scheme: dark;
+  --radius: 0.75rem;
+  --paper: #0a1020;
+  --background: #050811;
+  --foreground: #f1f5f9;
+  --card: rgb(13 19 34 / 0.78);
   --card-foreground: var(--foreground);
-  --popover: var(--card);
+  --popover: #0d1322;
   --popover-foreground: var(--foreground);
-  --primary: oklch(0.3 0.045 170);
-  --primary-foreground: oklch(0.97 0.012 85);
-  --secondary: oklch(0.93 0.02 85);
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: rgb(255 255 255 / 0.06);
   --secondary-foreground: var(--foreground);
-  --muted: oklch(0.935 0.016 85);
-  --muted-foreground: oklch(0.47 0.03 170);
-  --accent: oklch(0.92 0.05 60);
-  --accent-foreground: oklch(0.3 0.08 40);
-  --destructive: oklch(0.58 0.2 28);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.86 0.02 85);
-  --input: oklch(0.86 0.02 85);
-  --ring: oklch(0.68 0.17 45);
-  --ink: oklch(0.2 0.03 170);
-  --ink-foreground: oklch(0.95 0.015 85);
-  --ink-muted: oklch(0.72 0.03 170);
-  --signal: oklch(0.68 0.17 45);
-  --signal-foreground: oklch(0.18 0.03 40);
-  --ok: oklch(0.58 0.12 160);
-  --warn: oklch(0.75 0.14 80);
-  --shadow-soft: 0 1px 0 oklch(1 0 0 / 0.6) inset, 0 18px 40px -24px oklch(0.2 0.03 170 / 0.35);
-  --shadow-lift: 0 30px 60px -30px oklch(0.2 0.03 170 / 0.5);
-  --gradient-ink: radial-gradient(120% 80% at 80% 0%, oklch(0.32 0.05 170) 0%, oklch(0.2 0.03 170) 55%, oklch(0.16 0.025 170) 100%);
-  --gradient-signal: linear-gradient(135deg, oklch(0.74 0.16 60), oklch(0.64 0.18 35));
+  --muted: rgb(255 255 255 / 0.05);
+  --muted-foreground: #a3b1c6;
+  --accent: rgb(56 189 248 / 0.12);
+  --accent-foreground: #e0f2fe;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: rgb(255 255 255 / 0.1);
+  --input: rgb(255 255 255 / 0.16);
+  --ring: #38bdf8;
+  --ink: #0d1730;
+  --ink-foreground: #f1f5f9;
+  --ink-muted: #a3b1c6;
+  --signal: #38bdf8;
+  --signal-foreground: #ffffff;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --hover-line: rgb(56 189 248 / 0.45);
+  --header-bg: rgb(5 8 17 / 0.84);
+  --grid-line: rgb(148 163 184 / 0.06);
+  --aurora:
+    radial-gradient(900px circle at 12% 10%, rgb(37 99 235 / 0.22), transparent 55%),
+    radial-gradient(760px circle at 88% 12%, rgb(16 185 129 / 0.14), transparent 52%),
+    radial-gradient(820px circle at 50% 85%, rgb(99 102 241 / 0.16), transparent 60%);
+  --shadow-soft: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 24px 48px -28px rgb(0 0 0 / 0.7);
+  --shadow-lift: 0 30px 60px -30px rgb(0 0 0 / 0.8);
+  --gradient-ink: radial-gradient(120% 90% at 85% 0%, rgb(37 99 235 / 0.28) 0%, #0d1730 48%, #0a1020 100%);
+  /* Deeper stops than the homepage CTA (blue-600/sky-500/emerald-500) so white text passes AA. */
+  --gradient-signal: linear-gradient(90deg, #2563eb, #0284c7 55%, #059669);
+  --signal-glow: rgb(37 99 235 / 0.55);
+}
+
+/* Light theme: set by the homepage's toggle (localStorage for_theme_v2 = light). */
+:root.light {
+  color-scheme: light;
+  --paper: #ffffff;
+  --background: #faf8f4;
+  --foreground: #0f172a;
+  --card: rgb(255 255 255 / 0.88);
+  --popover: #ffffff;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: rgb(15 23 42 / 0.05);
+  --muted: rgb(15 23 42 / 0.045);
+  --muted-foreground: #475569;
+  --accent: rgb(37 99 235 / 0.1);
+  --accent-foreground: #1e3a8a;
+  --destructive: #be123c;
+  --border: rgb(15 23 42 / 0.11);
+  --input: rgb(15 23 42 / 0.2);
+  --ring: #2563eb;
+  --ink: #0f172a;
+  --ink-foreground: #f8fafc;
+  --ink-muted: #cbd5e1;
+  --signal: #1d4ed8;
+  --ok: #047857;
+  --warn: #b45309;
+  --hover-line: rgb(37 99 235 / 0.45);
+  --header-bg: rgb(255 255 255 / 0.9);
+  --grid-line: rgb(100 116 139 / 0.07);
+  --aurora:
+    radial-gradient(820px circle at 12% 8%, rgb(37 99 235 / 0.11), transparent 55%),
+    radial-gradient(700px circle at 88% 14%, rgb(217 119 6 / 0.1), transparent 52%),
+    radial-gradient(760px circle at 50% 80%, rgb(16 185 129 / 0.08), transparent 60%);
+  --shadow-soft: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 18px 40px -26px rgb(15 23 42 / 0.28);
+  --shadow-lift: 0 30px 60px -30px rgb(15 23 42 / 0.35);
+  --gradient-ink: radial-gradient(120% 90% at 85% 0%, #1e3a8a 0%, #0f172a 55%, #0b1120 100%);
+  --signal-glow: rgb(37 99 235 / 0.4);
 }
 
 @layer base {
@@ -85,49 +131,61 @@
   html { scroll-behavior: smooth; }
   body {
     background-color: var(--color-background);
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 48px 48px;
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    position: relative;
+    isolation: isolate;
+    overflow-x: hidden;
   }
-  h1, h2, h3 { font-family: var(--font-display); letter-spacing: 0; }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; background: var(--aurora);
+  }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.08; }
   em { font-style: italic; color: var(--color-signal); }
   ::selection { background: var(--signal); color: var(--signal-foreground); }
 }
 
 @layer components {
-  .surface-ink { background: var(--gradient-ink); color: var(--ink-foreground); }
+  /* Ink panels stay dark in both themes, so they pin the dark-theme accents for anything inside. */
+  .surface-ink { background: var(--gradient-ink); color: var(--ink-foreground); border: 1px solid rgb(255 255 255 / 0.1);
+    --signal: #38bdf8; --ok: #34d399; --warn: #fbbf24; --muted-foreground: var(--ink-muted); --border: rgb(255 255 255 / 0.14); --hover-line: rgb(56 189 248 / 0.45); }
   .grain { position: relative; isolation: isolate; }
   .grain::after {
     content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .08;
     background-image: radial-gradient(oklch(1 0 0) 0.6px, transparent 0.6px); background-size: 4px 4px;
   }
-  .card-paper { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-soft); }
-  .kicker { font-family: var(--font-mono); font-size: .72rem; letter-spacing: 0; text-transform: uppercase; color: var(--muted-foreground); }
+  .card-paper { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-soft); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+  .kicker { font-family: var(--font-mono); font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ok); }
   .btn-signal {
     background: var(--gradient-signal); color: var(--signal-foreground); font-weight: 700;
-    border-radius: 999px; padding: .85rem 1.4rem; display: inline-flex; gap: .5rem; align-items: center;
-    box-shadow: 0 12px 30px -12px var(--signal); transition: transform .2s, box-shadow .2s;
+    border-radius: 1rem; padding: .85rem 1.4rem; display: inline-flex; gap: .5rem; align-items: center;
+    box-shadow: 0 14px 32px -14px var(--signal-glow); transition: transform .2s, box-shadow .2s;
   }
-  .btn-signal:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -12px var(--signal); }
+  .btn-signal:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -14px var(--signal-glow); }
   .btn-signal:disabled { opacity: .45; transform: none; cursor: not-allowed; }
   .btn-ghost {
     border: 1px solid var(--border); border-radius: 999px; padding: .75rem 1.2rem; font-weight: 600;
     display: inline-flex; gap: .5rem; align-items: center; transition: background .2s, border-color .2s;
   }
-  .btn-ghost:hover { background: var(--muted); border-color: var(--foreground); }
+  .btn-ghost:hover { background: var(--accent); border-color: var(--hover-line); }
   .btn-ghost:disabled { opacity: .45; cursor: not-allowed; }
   .field { display: grid; gap: .4rem; }
   .field > span { font-weight: 600; font-size: .9rem; }
   .input {
-    width: 100%; background: var(--paper); border: 1.5px solid var(--border); border-radius: var(--radius-md);
+    width: 100%; background: var(--paper); color: var(--foreground); border: 1.5px solid var(--input); border-radius: var(--radius-md);
     padding: .75rem .9rem; font: inherit; transition: border-color .2s, box-shadow .2s;
   }
-  .input:focus { outline: none; border-color: var(--signal); box-shadow: 0 0 0 4px oklch(0.68 0.17 45 / .18); }
+  .input:focus { outline: none; border-color: var(--ring); box-shadow: 0 0 0 4px rgb(56 189 248 / .18); }
   .chip {
     border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: .7rem .9rem; cursor: pointer;
     background: var(--paper); font-weight: 600; transition: all .2s; display: flex; align-items: center; gap: .6rem;
   }
-  .chip:hover { border-color: var(--foreground); }
+  .chip:hover { border-color: var(--hover-line); background: var(--accent); }
   .chip[data-on="true"] { border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
   .reveal[data-in="true"] { opacity: 1; transform: none; }
@@ -158,3 +216,23 @@
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
   pre, p, a, strong, dd { overflow-wrap: anywhere; }
 }
+
+h1, h2, h3, h4.font-display { font-weight: 400; }
+@layer components {
+  .desk-header { position: sticky; top: 0; z-index: 40; background: var(--header-bg); border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+  .brand-mark { display: flex; width: 2.5rem; height: 2.5rem; flex: none; align-items: center; justify-content: center; border-radius: .75rem;
+    color: #fff; background: linear-gradient(135deg, #2563eb, #0ea5e9 55%, #10b981); box-shadow: 0 10px 24px -10px rgb(37 99 235 / .7); }
+  .text-gradient { background: linear-gradient(90deg, #3b82f6, #38bdf8 50%, #34d399); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  :root.light .text-gradient { background-image: linear-gradient(90deg, #1d4ed8, #0369a1 50%, #047857); }
+  .nav-link { font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); transition: color .2s; }
+  .nav-link:hover, .nav-link[data-status="active"], .nav-link[aria-current="page"] { color: var(--signal); }
+  .pill-btn { display: inline-flex; min-height: 36px; align-items: center; gap: .4rem; border-radius: 999px; border: 1px solid var(--input);
+    background: var(--muted); padding: .35rem .8rem; font-size: .75rem; font-weight: 600; color: var(--foreground); transition: border-color .2s; }
+  .pill-btn:hover { border-color: var(--ring); }
+  .prose-link { color: var(--signal); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--hover-line); }
+  .prose-link:hover { text-decoration-color: currentColor; }
+  .hover-card { transition: border-color .25s, transform .25s; }
+  .hover-card:hover { border-color: var(--hover-line); transform: translateY(-2px); }
+}
+@media print { body { background: #fff; } body::before { display: none; } }

@@ -22,6 +22,8 @@ export const LLMS_NOTES: string[] = [
 
 export function seoPages(): SeoPage[] {
   return [
+    // The designed homepage: it canonicalises to itself, so it belongs in the sitemap too.
+    { path: "/", title: "Fix or Refund? — EU consumer rights checker", section: "Consumer desk" },
     { path: "/en", title: "Fix or Refund? — Consumer Desk (English)", section: "Consumer desk" },
     { path: "/el", title: "Fix or Refund? — Οδηγός καταναλωτή (Ελληνικά)", section: "Consumer desk" },
     ...TRUST_PAGES.map((p) => ({ path: `/en/${p}`, title: `${p[0]!.toUpperCase()}${p.slice(1)}`, section: "English pages" })),

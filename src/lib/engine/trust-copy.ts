@@ -1,6 +1,8 @@
 /** All governance, supporting-page and result copy is maintained with the engine. */
 export const TRUST_COPY: Record<"en" | "el", Record<string, string>> = {
   en: {
+    navChecker: "Checker", brandSub: "The Consumer Desk · Independent Guide", navLabel: "Primary", footerNavLabel: "Site pages", menuToggle: "Open or close the menu", themeToggle: "Switch between dark and light theme",
+    footerLine: "Fix or Refund? — The Consumer Desk · Independent consumer guidance · Checker answers stay in your browser.",
     deskTitle: "Fix or Refund?", deskIntro: "Broken product? Check your next step. A private guide to possible seller remedies and repair options—not legal advice.",
     coverage: "Coverage", methodology: "Sources & methodology", privacy: "Privacy", ownership: "Ownership & corrections", guides: "Consumer guides",
     coverageTitle: "Country coverage", coverageIntro: "A country choice is not a national legal assessment. We show EU minimum information, not 27 verified national rulebooks. Cross-border governing law needs a separate check.",
@@ -34,6 +36,8 @@ export const TRUST_COPY: Record<"en" | "el", Record<string, string>> = {
     faq2a: "No. Repair or replacement often comes first. Serious faults or refused, failed or delayed remedies can affect termination, subject to evidence and exclusions. Greek special notification rules remain under review.", faq3a: "No. A repair choice is not a universal three-year warranty. Greek transition and limitation provisions need an amendment-aware review before being used here.", faq6a: "Checker answers and letters are processed locally. Saving is opt-in; sharing omits case data. Hosting and technical preview reporting can make requests. Open email hands your draft to your own app; nothing is sent automatically.", letterPrivacyBody: "Only an explicit save stores this case locally. Hosting and technical requests are separate from case processing.",
   },
   el: {
+    navChecker: "Έλεγχος", brandSub: "Γραφείο Καταναλωτή · Ανεξάρτητος Οδηγός", navLabel: "Κύρια πλοήγηση", footerNavLabel: "Σελίδες", menuToggle: "Άνοιγμα ή κλείσιμο μενού", themeToggle: "Εναλλαγή σκούρου και φωτεινού θέματος",
+    footerLine: "Fix or Refund? — Γραφείο Καταναλωτή · Ανεξάρτητη ενημέρωση καταναλωτών · Οι απαντήσεις σου μένουν στον browser σου.",
     deskTitle: "Fix or Refund?", deskIntro: "Χάλασε το προϊόν; Δες το επόμενο βήμα σου. Ιδιωτικός οδηγός πιθανών λύσεων από πωλητή ή κατασκευαστή—όχι νομική συμβουλή.",
     coverage: "Κάλυψη", methodology: "Πηγές & μεθοδολογία", privacy: "Ιδιωτικότητα", ownership: "Ταυτότητα & διορθώσεις", guides: "Οδηγοί καταναλωτή",
     coverageTitle: "Κάλυψη ανά χώρα", coverageIntro: "Η επιλογή χώρας δεν αποτελεί εθνική νομική αξιολόγηση. Παρέχουμε ελάχιστη πληροφόρηση ΕΕ, όχι 27 επαληθευμένα εθνικά πλαίσια. Το εφαρμοστέο δίκαιο σε διασυνοριακή αγορά χρειάζεται χωριστό έλεγχο.",
