@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
-  Link,
   createRootRouteWithContext,
   useRouter,
   HeadContent,
@@ -34,12 +33,7 @@ function NotFoundComponent() {
           {t("missingBody")}
         </p>
         <div className="mt-6">
-          <Link
-            to="/"
-            className="btn-signal text-sm"
-          >
-            {t("home")}
-          </Link>
+          <a href="/" className="btn-signal text-sm">{t("home")}</a>
         </div>
       </div>
     </div>
