@@ -8,14 +8,8 @@ Disclaimer: Independent informational guide, not a government service or qualifi
 ## 1. Directive (EU) 2019/771 (Sale of Goods — Statutory Legal Guarantee)
 - Minimum 2-year legal guarantee of conformity from delivery against the professional seller across all 27 EU Member States.
 - The seller—not the manufacturer—is legally liable. Commercial warranties cannot shorten or replace statutory rights.
-- Reversed burden of proof: at least 12 months EU-wide (24 months in France, Belgium, Spain, Portugal, Sweden, and Poland).
-- Longer national statutory windows:
-  - Spain: 3 years
-  - Portugal: 3 years (Decree-Law 84/2021)
-  - Sweden: 3 years
-  - Ireland: up to 6 years limitation period to bring legal claims
-  - Finland & Netherlands: expected reasonable lifespan of the product (no fixed 2-year cap)
-  - Greece: 2 years (Law 4967/2022, Greek Civil Code art. 513 ff.)
+- Reversed burden of proof: at least 12 months EU-wide. Member States may extend this to 24 months.
+- Member States may set longer guarantee periods. This site shows the EU minimum only and has not verified national rules; it does not state country-specific periods.
 - Second-hand goods: may be reduced by agreement, never below 1 year.
 - Remedies hierarchy: Free repair or free replacement first; proportionate price reduction or full refund (contract termination) if impossible, disproportionate, refused, delayed unreasonably, repair fails, or defect is severe.
 
